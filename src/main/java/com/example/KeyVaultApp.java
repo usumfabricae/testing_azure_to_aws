@@ -12,17 +12,32 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class KeyVaultApp {
     
+    private final SecretsManagerClient secretsClient;
+    private final boolean autoRun;
+    
     public KeyVaultApp(String region) {
+        this(SecretsManagerClient.builder()
+            .region(Region.of(region))
+            .build(), true);
+    }
+    
+    // Constructor for dependency injection (testing)
+    public KeyVaultApp(SecretsManagerClient secretsClient) {
+        this(secretsClient, false);
+    }
+    
+    // Private constructor with autoRun control
+    private KeyVaultApp(SecretsManagerClient secretsClient, boolean autoRun) {
+        this.secretsClient = secretsClient;
+        this.autoRun = autoRun;
+        if (autoRun) {
+            retrieveAndDisplayCredentials();
+        }
+    }
+    
+    private void retrieveAndDisplayCredentials() {
         try {
-            SecretsManagerClient secretsClient = SecretsManagerClient.builder()
-                .region(Region.of(region))
-                .build();
-            
-            GetSecretValueRequest request = GetSecretValueRequest.builder()
-                .secretId("sql-db-credentials")
-                .build();
-            GetSecretValueResponse response = secretsClient.getSecretValue(request);
-            DatabaseCredentials credentials = parseCredentials(response.secretString());
+            DatabaseCredentials credentials = getCredentials("sql-db-credentials");
             
             System.out.println("Database credentials retrieved successfully:");
             System.out.println("Username: " + credentials.getUsername());
@@ -43,7 +58,15 @@ public class KeyVaultApp {
         }
     }
     
-    private DatabaseCredentials parseCredentials(String secretValue) throws Exception {
+    public DatabaseCredentials getCredentials(String secretId) throws Exception {
+        GetSecretValueRequest request = GetSecretValueRequest.builder()
+            .secretId(secretId)
+            .build();
+        GetSecretValueResponse response = secretsClient.getSecretValue(request);
+        return parseCredentials(response.secretString());
+    }
+    
+    public DatabaseCredentials parseCredentials(String secretValue) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode node = mapper.readTree(secretValue);
         
@@ -53,7 +76,7 @@ public class KeyVaultApp {
         return new DatabaseCredentials(username, password);
     }
     
-    static class DatabaseCredentials {
+    public static class DatabaseCredentials {
         private final String username;
         private final String password;
         
