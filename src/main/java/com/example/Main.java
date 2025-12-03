@@ -4,9 +4,9 @@ public class Main {
     
     public static void main(String[] args) {
         if (args.length == 0) {
-            System.out.println("Azure Key Vault Database Credentials Retriever");
-            System.out.println("Usage: java -jar app.jar <key-vault-url>");
-            System.out.println("Example: java -jar app.jar https://mykeyvault.vault.azure.net/");
+            System.out.println("AWS Secrets Manager Database Credentials Retriever");
+            System.out.println("Usage: java -jar app.jar <aws-region>");
+            System.out.println("Example: java -jar app.jar us-east-1");
             System.exit(1);
         }
         
