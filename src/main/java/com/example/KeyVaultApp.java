@@ -4,6 +4,9 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
+import software.amazon.awssdk.services.secretsmanager.model.ResourceNotFoundException;
+import software.amazon.awssdk.services.secretsmanager.model.InvalidRequestException;
+import software.amazon.awssdk.services.secretsmanager.model.SecretsManagerException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -25,6 +28,15 @@ public class KeyVaultApp {
             System.out.println("Username: " + credentials.getUsername());
             System.out.println("Password: [HIDDEN]");
             
+        } catch (ResourceNotFoundException e) {
+            System.err.println("Error: Secret not found in AWS Secrets Manager: " + e.getMessage());
+            System.exit(1);
+        } catch (InvalidRequestException e) {
+            System.err.println("Error: Invalid request to AWS Secrets Manager: " + e.getMessage());
+            System.exit(1);
+        } catch (SecretsManagerException e) {
+            System.err.println("Error: AWS Secrets Manager error: " + e.getMessage());
+            System.exit(1);
         } catch (Exception e) {
             System.err.println("Error retrieving credentials: " + e.getMessage());
             System.exit(1);
